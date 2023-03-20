@@ -99,17 +99,15 @@ def main():
     # Generate main input to Unison (.ll -> .mir).
 
     mir = temp_filename('.mir')
-    # TODO: implement and pass "-unison-mir".
     cmd_mir = [llc] + llc_flags + \
-              ["-stop-before", exit_pass, "-o", mir, args.infile]
+              ["-stop-before", exit_pass, "-unison-mir", "-o", mir, args.infile]
     execute(args, cmd_mir)
 
     # Generate initial solution for Unison (.ll -> .asm.mir).
 
     asm_mir = temp_filename('.asm.mir');
-    # TODO: implement and pass "-unison-mir".
     cmd_asm_mir = [llc] + llc_flags + \
-                  ["-stop-before", entry_pass, "-o", asm_mir, args.infile];
+                  ["-stop-before", entry_pass, "-unison-mir", "-o", asm_mir, args.infile];
     execute(args, cmd_asm_mir)
 
     # Run Unison (.mir -> .asm.mir -> .unison.mir).

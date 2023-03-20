@@ -69,6 +69,10 @@ static cl::opt<bool> SimplifyMIR(
 static cl::opt<bool> PrintLocations("mir-debug-loc", cl::Hidden, cl::init(true),
                                     cl::desc("Print MIR debug-locations"));
 
+namespace llvm {
+extern cl::opt<bool> UnisonMIR;
+} // namespace llvm
+
 namespace {
 
 /// This structure describes how to print out stack object references.
@@ -681,6 +685,12 @@ void MIPrinter::print(const MachineBasicBlock &MBB) {
       if (I != MBB.succ_begin())
         OS << ", ";
       OS << printMBBReference(**I);
+      // The Unison style uses a simpler formatting of the probabilities.
+      if (UnisonMIR && (!SimplifyMIR || !canPredictProbs))
+        OS << '('
+           << MBB.getSuccProbability(I).scale(100)
+           << ')';
+      else // Intentional indention to reduce merge conflicts.
       if (!SimplifyMIR || !canPredictProbs)
         OS << '('
            << format("0x%08" PRIx32, MBB.getSuccProbability(I).getNumerator())
@@ -706,6 +716,35 @@ void MIPrinter::print(const MachineBasicBlock &MBB) {
     }
     OS << "\n";
     HasLineAttributes = true;
+  }
+
+  if (UnisonMIR) {
+    // In the Unison style we print the live out registers. If there are no
+    // registers live-out, the marker still provides the information that the
+    // function actually returns (which is important e.g. to implement calling
+    // conventions).
+    if (MBB.isReturnBlock()) {
+      const TargetRegisterInfo &TRI = *MRI.getTargetRegisterInfo();
+      const MachineInstr &I = MBB.back();
+      OS.indent(2) << "liveouts:";
+      std::string Sep = " ";
+      // We assume that I's implicit uses correspond to the live out registers
+      // while the explicit uses are just common operands (such as the return
+      // address, predicate operands, etc.).
+      for (auto MO : I.uses())
+        if (MO.isReg() && MO.isImplicit()) {
+          OS << Sep << printReg(MO.getReg(), &TRI);
+          Sep = ", ";
+        }
+      OS << "\n";
+      HasLineAttributes = true;
+    }
+    // Print the 'exit' marker for basic blocks that exit but do not return to
+    // their caller function.
+    if (MBB.succ_empty() && (MBB.empty() || !MBB.back().isReturn())) {
+      OS.indent(2) << "exit\n";
+      HasLineAttributes = true;
+    }
   }
 
   if (HasLineAttributes)
@@ -913,6 +952,11 @@ void MIPrinter::print(const MachineInstr &MI, unsigned OpIdx,
   case MachineOperand::MO_BlockAddress:
   case MachineOperand::MO_DbgInstrRef:
   case MachineOperand::MO_ShuffleMask: {
+    // Unison expects metadata operands in a raw format.
+    if (UnisonMIR && Op.getType() == MachineOperand::MO_Metadata) {
+      OS << *(Op.getMetadata());
+      break;
+    }
     unsigned TiedOperandIdx = 0;
     if (ShouldPrintRegisterTies && Op.isReg() && Op.isTied() && !Op.isDef())
       TiedOperandIdx = Op.getParent()->findTiedOperandIdx(OpIdx);

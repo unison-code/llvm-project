@@ -46,6 +46,10 @@ static cl::opt<bool> PrintSlotIndexes(
              "SlotIndexes when available"),
     cl::init(true), cl::Hidden);
 
+namespace llvm {
+extern cl::opt<bool> UnisonMIR;
+} // namespace llvm
+
 MachineBasicBlock::MachineBasicBlock(MachineFunction &MF, const BasicBlock *B)
     : BB(B), Number(-1), xParent(&MF) {
   Insts.Parent = this;
@@ -566,6 +570,17 @@ void MachineBasicBlock::printName(raw_ostream &os, unsigned printNameFlags,
     if (getBBID().has_value()) {
       os << (hasAttributes ? ", " : " (");
       os << "bb_id " << *getBBID();
+      hasAttributes = true;
+    }
+    if (UnisonMIR) {
+      // In Unison MIR style, the first instruction of each block contains the
+      // block's estimated execution frequency as a metadata operand. The
+      // instruction is emitted, but Unison is expected to disregard it.
+      os << (hasAttributes ? ", " : " (");
+      const auto* MO = instr_begin()->operands_begin();
+      auto* MD = MO->getMetadata()->getOperand(1).get();
+      auto* MV = cast<ConstantAsMetadata>(MD)->getValue();
+      os << "freq " << MV->getUniqueInteger();
       hasAttributes = true;
     }
   }

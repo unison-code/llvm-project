@@ -372,6 +372,7 @@ void initializeTypePromotionLegacyPass(PassRegistry&);
 void initializeUniformityInfoWrapperPassPass(PassRegistry &);
 void initializeUnifyFunctionExitNodesLegacyPassPass(PassRegistry &);
 void initializeUnifyLoopExitsLegacyPassPass(PassRegistry &);
+void initializeUnisonMIRPreparePass(PassRegistry&);
 void initializeUnpackMachineBundlesPass(PassRegistry&);
 void initializeUnreachableBlockElimLegacyPassPass(PassRegistry&);
 void initializeUnreachableMachineBlockElimPass(PassRegistry&);
