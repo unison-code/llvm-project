@@ -1,0 +1,49 @@
+\def\lightGray{gray!15}%
+\newdimen\zerolinewidth%
+\newdimen\cornerRadius%
+\newdimen\lessCornerRadius%
+\cornerRadius=20pt%
+\lessCornerRadius=10pt%
+\tikzset{%
+  zero line width/.code={%
+    \zerolinewidth=\pgflinewidth
+    \tikzset{line width=0cm}%
+  },
+  use line width/.code={%
+    \tikzset{line width=\the\zerolinewidth}%
+  },
+  file/.style={%
+    outer sep=0,
+  },
+  input/.style={%
+    file,
+  },
+  output/.style={%
+    file,
+  },
+  box/.style={%
+    draw,
+    fill=white,
+  },
+  flow/.style={%
+    ->,
+    >=stealth,
+  },
+  unison/.style={%
+    draw,
+    inner xsep=3mm,
+    inner ysep=4mm,
+    dash pattern=on 2mm off 2mm,
+    fill=bgcolor2!33
+  },
+  unison stage/.style={%
+    box,
+    fill=bgcolor2
+  },
+}%
+\pgfdeclarelayer{layer0}%
+\pgfdeclarelayer{layer1}%
+\pgfdeclarelayer{layer2}%
+\pgfdeclarelayer{layer3}%
+\pgfdeclarelayer{layer4}%
+\pgfdeclarelayer{layer5}%

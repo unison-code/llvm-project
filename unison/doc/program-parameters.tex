@@ -1,0 +1,82 @@
+\begin{longtable}{ l p{12cm} }
+
+  \parameter{B, O, P, T}{sets of blocks, operations, operands and temporaries}
+  \json{B}{[0, 1, 2]}
+  \json{O}{[0, 1, 2, \dots, 33, 34]}
+  \json{P}{[0, 1, 2, \dots, 67, 68]}
+  \json{T}{[0, 1, 2, \dots, 31, 32]}
+
+  \tableSpace
+
+  \parameter{\operationBlock{o}}{block to which operation $o$ belongs}
+  \json{block}{[0, 0, \dots, 1, 1, 1, 2, 2, 2, 2, 2]}
+
+  \tableSpace
+
+  \parameter{\operands{o}}{set of operands of operation $o$}
+  \json{operands}{[[0, 1], [2, 3], [4], \dots, [65, 66], [67], [68]]}
+
+  \tableSpace
+
+  \parameter{\temps{p}}{set of temporaries that can be connected to operand $p$}
+  \json{temps}{[[0], [1], [-1, 0], \dots, [30], [29, 31, 32]]}
+
+  \tableSpace
+
+  \parameter{\use{p}}{whether $p$ is a use operand}
+  \json{use}{[false, false, true, \dots, true, true]}
+
+  \tableSpace
+
+  \parameter{\adjacent{p}{q}}{whether operands $p$ and $q$ are adjacent}
+  \json{adjacent}{[[20, 24], [21, 25], \dots, [60, 61]]}
+
+  \tableSpace
+
+  \parameter
+  {\preAssigned{p\hspace{0.025cm}}{r}}
+  {whether operand $p$ is preassigned to register $\register{r}$}
+  \json{preassign}{[[0, 0], [1, 31], [68, 0]]}
+
+  \tableSpace
+
+  \parameter{\width{t}}{number of register atoms that temporary $t$ occupies}
+  \json{width}{[1, 1, 1, \dots, 1, 1]}
+
+  \tableSpace
+
+  \parameter{\frequency{b}}{estimated execution frequency of block $b$}
+  \json{freq}{[4, 85, 4]}
+
+  \tableSpace
+
+  % Below parameters are not in LCTES2014 paper
+
+  \parameter{\minimumLiveDuration{t}}{minimum live duration of temporary $t$ if
+    it is live}
+  \json{minlive}{[1, 1, 1, \dots, 1, 1]}
+
+  \tableSpace
+
+  \parameter
+  {\dependencyGraph{b}}
+  {fixed dependency graph of the operations of block $b$}
+  \json{dep}{[[[0, 1], \dots, [1, 8], \dots, [10, 11]], [\dots], [\dots]]}
+
+  \tableSpace
+
+  \parameter
+  {\prescheduled{o}{c}}
+    {whether operation $o$ is \emph{prescheduled} to cycle $\cycle{c}$}
+  \json{preschedule}{[[2, 3], [1, 1], [60, 24]]}
+  \jsonComment{note: the example JSON array is extracted from a different
+    program (Hexagon programs do not yet yield prescheduling constraints)}
+
+  \tableSpace
+
+  \parameter
+  {\blockOut{b}}
+  {out-delimiter of block $b$}
+  \json{out}{[11, 29, 34]}
+
+\end{longtable}

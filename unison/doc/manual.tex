@@ -1,0 +1,1080 @@
+\documentclass[11pt]{report}
+\usepackage{graphicx}
+\usepackage{abstract}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage[hidelinks,breaklinks]{hyperref}
+\usepackage{fancyvrb}
+\usepackage{longtable}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+\usepackage{etoolbox}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{tikz}
+\usetikzlibrary{positioning, fit}
+\usepackage{unison}
+\usepackage[left=3cm, right=3cm]{geometry}
+\usepackage[adobe-utopia]{mathdesign}
+
+\setcounter{secnumdepth}{2}
+
+\title{The Unison Manual}
+
+\author{Roberto Castañeda Lozano}
+
+\date{}
+
+\renewcommand{\abstractname}{}
+\renewcommand{\absnamepos}{empty}
+
+% Generated with https://coolors.co
+% TODO: find a better color palette
+\definecolor{bgcolor1}{rgb}{1, 0.9921568627, 0.5960784314}%
+\definecolor{bgcolor2}{rgb}{0.7411764706, 0.8941176471, 0.6549019608}%
+\definecolor{bgcolor3}{rgb}{0.7019607843, 0.8235294118, 0.6980392157}%
+\definecolor{bgcolor4}{rgb}{0.6235294118, 0.7333333333, 0.8}%
+\definecolor{bgcolor5}{rgb}{0.4784313725, 0.6117647059, 0.7764705882}%
+
+\hypersetup{
+  colorlinks = true,
+}
+
+\newenvironment{colorBox}[1]
+ {\begin{tcolorbox}[
+    breakable,
+    colback=#1,
+    colframe=white,
+    boxrule=0pt
+  ]}
+ {\end{tcolorbox}}
+
+\newenvironment{command}
+ {\VerbatimEnvironment
+  \begin{colorBox}{bgcolor1}
+  \begin{Verbatim}[fontsize=\small]}
+ {\end{Verbatim}\end{colorBox}}
+
+\newenvironment{codeBox}
+ {\begin{colorBox}{bgcolor4!20}}
+ {\end{colorBox}}
+
+\begin{document}
+
+\maketitle
+
+\setcounter{tocdepth}{2}
+\tableofcontents
+
+\chapter*{Introduction}
+\addcontentsline{toc}{chapter}{Introduction}
+
+You are reading the manual of \href{http://unison-code.github.io/}{Unison}: a
+simple, flexible, and potentially optimal open-source tool that performs
+integrated \href{https://en.wikipedia.org/wiki/Register_allocation}{register
+  allocation} and
+\href{https://en.wikipedia.org/wiki/Instruction_scheduling}{instruction
+  scheduling} using
+\href{https://en.wikipedia.org/wiki/Constraint_programming}{constraint
+  programming}.
+
+Unison can be used as an alternative or as a complement to the algorithms
+applied by standard compilers such as \href{https://gcc.gnu.org/}{GCC} and
+\href{http://llvm.org/}{LLVM}.
+%
+Unison is particularly easy to integrate with the latter as a driver is already
+available (see Chapter~\ref{sec:llvm-integration} for details).
+
+This manual is divided into two main parts: Part~\ref{part:using-unison}
+(Chapters~\ref{sec:license-contact-and-acknowledgments}
+to~\ref{sec:llvm-integration}) is devoted to the use of Unison, while
+Part~\ref{part:developing-and-extending-unison} (Chapters~\ref{sec:architecture}
+to~\ref{sec:target-description}) deals with its development and extension.
+
+Chapter~\ref{sec:license-contact-and-acknowledgments} discusses licensing
+aspects and provides contact information.
+%
+Chapter~\ref{sec:getting-started} contains instructions to download, build,
+install, and test Unison.
+%
+Chapter~\ref{sec:llvm-integration} describes how to use the LLVM driver.
+
+Chapter~\ref{sec:architecture} outlines the architecture of Unison.
+%
+Chapter~\ref{sec:unison-ir} describes the intermediate representation
+(\emph{Unison IR}).
+%
+Chapter~\ref{sec:combinatorial-model} formulates the combinatorial model that
+lies at the core of the Unison approach.
+%
+Chapter~\ref{sec:target-description} provides information about how processors
+are described in Unison.
+
+Appendix~\ref{sec:further-reading} provides references for further reading and
+other sources of documentation.
+
+\part{Using Unison}
+\label{part:using-unison}
+
+\chapter{License, Contact, and Acknowledgments}%
+\label{sec:license-contact-and-acknowledgments}
+
+Unison is developed at the \href{https://www.sics.se/}{Swedish Institute of
+  Computer Science} in collaboration with \href{https://www.kth.se/en}{KTH Royal
+  Institute of Technology} in Stockholm, Sweden.
+
+Unison and the Unison Driver for LLVM are released under the BSD3 open-source
+license:
+
+\fvset{fontsize=\footnotesize}
+\begin{codeBox}
+\BVerbatimInput{verbatim/LICENSE}
+\end{codeBox}
+
+Unison includes code from the following projects:
+
+\begin{itemize}
+\item \href{https://hackage.haskell.org/package/Graphalyze}{Graphalyze} (in some
+  graph algorithms of the \code{unison} package).
+  %
+  The code is licensed under
+  \href{https://hackage.haskell.org/package/Graphalyze/src/LICENSE}{BSD2}.
+
+\item \href{https://github.com/open-source-parsers/jsoncpp}{JsonCpp} (used
+  by the presolver and solver to parse their input).
+  %
+  The code is licensed under
+  \href{https://github.com/open-source-parsers/jsoncpp/blob/master/LICENSE}{MIT}.
+
+\item Erik Ekström's
+  \href{https://www.sics.se/\%7ercas/teaching/ErikEkstrom_2015.pdf}{master's
+    thesis} (in parts of the presolver).
+  %
+  The code is licensed under BSD3 but the copyright is held by Erik Ekström.
+
+\item Mikael Almgren's
+  \href{https://www.sics.se/\%7ercas/teaching/MikaelAlmgren_2015.pdf}{master's
+    thesis} (in parts of the presolver).
+  %
+  The code is licensed under BSD3 but the copyright is held by Mikael Almgren.
+\end{itemize}
+
+The Unison Driver is built on top of the LLVM Compiler Infrastructure which is
+licensed under the University of Illinois/NCSA Open Source License, see
+\href{http://llvm.org/}{the LLVM website} for details.
+
+Furthermore, Unison makes extensive use of other open-source components,
+including:
+
+\begin{itemize}
+\item \href{http://www.gecode.org/}{Gecode}
+\item \href{https://www.qt.io/}{Qt}
+\item \href{http://www.graphviz.org/}{Graphviz}
+\item \href{https://www.haskell.org/platform/}{Haskell Platform}
+\item Various Haskell packages (see the \code{Build-Depends} field in
+  \href{https://github.com/unison-code/unison/blob/master/src/unison/unison.cabal}{this}
+  and
+  \href{https://github.com/unison-code/unison/blob/master/src/unison-specsgen/unison-specsgen.cabal}{this}
+  package descriptions)
+\end{itemize}
+
+For further license detail on these components, please check their websites.
+
+Unison is designed, developed, and maintained by
+
+\begin{itemize}
+\item Roberto Castañeda Lozano (\href{mailto:rcas@acm.org}{rcas@acm.org})
+\item Mats Carlsson (\href{mailto:mats.carlsson@ri.se}{mats.carlsson@ri.se})
+\item Gabriel Hjort Blindell (\href{mailto:ghb@kth.se}{ghb@kth.se})
+\item Christian Schulte (\href{mailto:cschulte@kth.se}{cschulte@kth.se})
+\end{itemize}
+
+Other people have also collaborated in the development of Unison:
+%
+\begin{itemize}
+\item Özgür Akgün
+\item Mikael Almgren
+\item Noric Couderc
+\item Frej Drejhammar
+\item Erik Ekström
+\item Bevin Hansson
+\item Jan Tomljanović
+\item Kim-Anh Tran
+\end{itemize}
+
+\chapter{Getting Started}%
+\label{sec:getting-started}
+
+Unison has to be built from source as we do not yet provide precompiled
+packages.
+%
+The tool is known to work on Linux and it might work on other platforms such as
+macOS and Windows as all software dependencies claim to be portable across
+these.
+
+Building, installing, and testing Unison in Linux is relatively straightforward.
+%
+Just take the following steps.
+
+\section{Downloading}
+
+Unison is hosted by \href{https://github.com/unison-code/unison}{GitHub}.
+%
+The easiest way to access its source code (including the history) is by running:
+%
+\begin{command}
+git clone https://github.com/unison-code/unison.git
+\end{command}
+
+\section{Prerequisites}
+
+Unison has the following direct dependencies:
+%
+\begin{itemize}
+\item \href{http://www.haskellstack.org/}{Stack}
+\item \href{https://www.qt.io/}{Qt (version 5.x)}
+\item \href{http://www.graphviz.org/}{Graphviz library}
+\item \href{http://www.gecode.org/}{Gecode (version 6.0.0)}
+\end{itemize}
+%
+To get the first three dependencies in Debian-based distributions, just run:
+%
+\begin{command}
+apt-get install haskell-stack qtbase5-dev libgraphviz-dev
+\end{command}
+%
+Upgrade Slack after installing it:
+%
+\begin{command}
+stack upgrade
+\end{command}
+
+The source of Gecode can be fetched with:
+%
+\begin{command}
+wget https://github.com/Gecode/gecode/archive/release-6.0.0.tar.gz
+\end{command}
+
+\section{Building}
+
+Just go to the \code{src} directory and run:
+%
+\begin{command}
+make build
+\end{command}
+
+\section{Testing}
+
+Unison contains a test suite with a few functions where different targets and
+optimization goals are exercised.
+%
+To execute the tests just run:
+%
+\begin{command}
+make test
+\end{command}
+
+\section{Installing}
+
+The building process generates three binaries.
+%
+The installation process consists in copying the binaries into the appropriate
+system directory.
+%
+To install the binaries under the default directory \code{usr/local} just run:
+%
+\begin{command}
+make install
+\end{command}
+
+The installation directory is specified by the Makefile variable \code{PREFIX}.
+%
+To install the binaries under an alternative directory \code{\$DIR} just run:
+%
+\begin{command}
+make install PREFIX=$DIR
+\end{command}
+
+\section{Running}
+%
+This manual uses the iterative version of the factorial function as a running
+example.
+%
+A possible C implementation is as follows:
+%
+\fvset{fontsize=\small}
+\begin{codeBox}
+\BVerbatimInput{code/factorial.c}
+\end{codeBox}
+
+
+When used as a standalone tool, Unison takes as input a function in LLVM's
+\href{http://llvm.org/docs/MIRLangRef.html}{Machine IR format (MIR)}.
+%
+In this format, instructions of a certain processor have already been selected.
+%
+The factorial function in MIR format with
+\href{https://developer.qualcomm.com/software/hexagon-dsp-sdk/dsp-processor}{Hexagon
+  V4} instructions looks as follows:
+%
+\fvset{fontsize=\small}
+\begin{codeBox}
+\BVerbatimInput{code/factorial.mir}
+\end{codeBox}
+%
+To execute Unison on this function and obtain the optimal register allocation
+and instruction schedule for Hexagon V4, just run the following command from the
+top of the Git repository:
+%
+\begin{command}
+uni run doc/code/factorial.mir --goal=speed
+\end{command}
+
+This command outputs a function in MIR format where registers are allocated and
+instructions are scheduled.
+%
+The function is thus already very close to assembly code:
+%
+\fvset{fontsize=\small}
+\begin{codeBox}
+\BVerbatimInput{code/factorial.unison.mir}
+\end{codeBox}
+
+The \code{uni} tool has several options and commands such as \code{run}.
+%
+Detailed information about each option and command can be obtained by running:
+%
+\begin{command}
+uni --help
+\end{command}
+
+Unison can be used as a standalone tool as illustrated above but is only really
+useful as a complement to a full-fledged compiler.
+%
+The next section gives instructions to use Unison together with LLVM.
+
+\chapter{LLVM Integration}%
+\label{sec:llvm-integration}
+
+Unison is accompanied with a driver that allows transparent integration with the
+LLVM compiler infrastructure.
+%
+In particular, the driver enables
+\href{http://llvm.org/docs/CommandGuide/llc.html}{LLVM's code generator}
+(\code{llc}) to run Unison transparently instead of its standard register
+allocation and instruction scheduling algorithms.
+%
+Figure~\ref{fig:llvm} shows how the LLVM driver interfaces with Unison to
+produce assembly code all the way from source code.
+%
+Arcs between components are labeled with the file extension corresponding to the
+shared data file.
+
+\begin{figure}[H]
+  \centering
+  \scalebox{0.75}{\input{figures/llvm}}
+  \caption{design of the LLVM driver}
+  \label{fig:llvm}
+\end{figure}
+
+Unison uses LLVM's \href{http://llvm.org/docs/MIRLangRef.html}{Machine IR format
+  (MIR)} as the interface language.
+%
+Unison takes as input a function in MIR format (\code{.mir}) and the function
+where LLVM has already performed register allocation and instruction scheduling
+(\code{.asm.mir}) as a starting point for the optimization algorithm.
+%
+For our running example, the starting solution \code{factorial.asm.mir} looks as
+follows:
+%
+\fvset{fontsize=\small}
+\begin{codeBox}
+\BVerbatimInput{code/factorial.asm.mir}
+\end{codeBox}
+%
+The result of running Unison (\code{.unison.mir}) is sent back to \code{llc}
+where the final assembly code is emitted.
+
+As for the core Unison tool, the driver must be built from source as we do not
+yet provide precompiled packages.
+%
+The driver is known to work on Linux and should work in all other main platforms
+provided that Unison itself can be built successfully.
+
+\section{Downloading}
+
+The Unison driver for LLVM is hosted as a LLVM form by
+\href{https://github.com/unison-code/llvm}{GitHub}.
+%
+The easiest way to access its source code (including the history) is by running:
+%
+\begin{command}
+git clone https://github.com/unison-code/llvm.git
+\end{command}
+
+LLVM 3.8 is the latest LLVM supported version.
+%
+To access the driver for this version run the following command on the cloned
+repository:
+%
+\begin{command}
+git checkout release_38-unison
+\end{command}
+
+\section{Prerequisites}
+
+The LLVM driver depends on Unison being installed successfully.
+%
+Check the \href{http://llvm.org/docs/GettingStarted.html#requirements}{LLVM
+  website} for the prerequisites to build LLVM itself.
+
+\section{Building, Testing, and Installing}
+
+Just follow the instructions provided at
+\href{http://llvm.org/docs/GettingStarted.html#compiling-the-llvm-suite-source-code}{LLVM's
+  website} as usual.
+
+\section{Running with llc}
+
+To execute \code{llc} such that Unison is used for register allocation and
+instruction scheduling, just run the following command from the top of the core
+Unison Git repository:
+%
+\begin{command}
+llc doc/code/factorial.ll -march=hexagon -mcpu=hexagonv4 -unison
+\end{command}
+
+Currently, Unison supports the following LLVM targets (defined by
+\code{march}-\code{mcpu}-\code{mattr} triples):
+
+\begin{center}
+  \begin{tabular}{l l l l}
+    target & \code{-march=} & \code{-mcpu=} & \code{-mattr=} \\\hline
+    Hexagon V4 & \code{hexagon} & \code{hexagonv4} & \\
+    ARM1156T2F-S & \code{arm} & \code{arm1156t2f-s} & \code{+thumb-mode} \\
+    MIPS32 & \code{mips} & \code{mips32} & \\
+  \end{tabular}
+\end{center}
+
+Other flags (with a \code{-unison} prefix) can be used to control the execution
+of Unison, run \code{llc --help} for details.
+
+\section{Running with clang}
+
+To execute \code{clang} with Unison's register allocation and instruction
+scheduling for Hexagon V4, first build and install a matching \code{clang}
+version (see the \href{http://clang.llvm.org/get_started.html}{Clang website}
+for details).
+%
+Then just run the following command from the top of the core Unison Git
+repository:
+%
+\begin{command}
+clang doc/code/factorial.c -target hexagon -mllvm -unison
+\end{command}
+
+Alternatively, functions can be annotated with the \code{"unison"} attribute to
+indicate that Unison should be run on them:
+%
+\begin{command}
+__attribute__((annotate("unison")))
+\end{command}
+
+\part{Developing and Extending Unison}
+\label{part:developing-and-extending-unison}
+
+\chapter{Architecture}%
+\label{sec:architecture}
+
+As usual in compiler construction, Unison is organized as a chain of
+transformation components through which the program flows.
+%
+Each intermediate representation of the program is stored in a file.
+%
+Unison takes a mandatory and an optional file as input.
+%
+The mandatory file is a function in LLVM's
+\href{http://llvm.org/docs/MIRLangRef.html}{Machine IR format} (\code{.mir})
+where:
+%
+\begin{itemize}
+\item instructions of a certain processor have already been selected,
+\item the code is in
+  \href{https://en.wikipedia.org/wiki/Static_single_assignment_form}{Static
+    Single Assignment} (SSA) form,
+\item instructions use and define temporaries (program variables at the code
+  generation level) rather than processor registers, and
+\item instructions are not yet scheduled.
+\end{itemize}
+%
+The optional file (\code{.asm.mir}) is also in Machine IR format and represents
+the same function where register allocation and instruction scheduling has
+already been applied by an external tool (typically \code{llc}).
+%
+This file contains as a structured representation of assembly code that Unison
+can take as a starting solution within the optimization process.
+%
+Unison generates as output a single function (\code{.unison.mir}) with the given
+function after register allocation and instruction scheduling.
+%
+If Unison cannot improve the initial solution provided in the \code{.asm.mir}
+file, this is just shown as output.
+
+Figure~\ref{fig:components} shows the main components involved in compilation of
+intermediate (\code{.mir}) code to assembly (\code{.unison.mir}) code.
+%
+Arcs between components are labeled with the file extension corresponding to the
+shared data file.
+%
+The Unison components are enclosed by a dashed rectangle.
+
+\begin{figure}[H]
+  \centering
+  \scalebox{0.65}{\input{figures/unison-components}}
+  \caption{main components and boundaries of Unison}
+  \label{fig:components}
+\end{figure}
+
+The function of each component is:
+
+\begin{description}
+
+\item [\code{uni import}:] transform the instruction-selected program into
+  Unison IR;
+
+\item [\code{uni linearize}:] transform the program to Linear Static Single
+  Assignment form;
+
+\item [\code{uni extend}:] extend the program with copies;
+
+\item [\code{uni augment}:] augment the program with alternative temporaries;
+
+\item [\code{uni model}:] formulate a combinatorial problem combining global
+  register allocation and instruction scheduling;
+
+\item [\code{gecode-presolver}:] produce an equivalent combinatorial problem
+  that is easier to solve;
+
+\item [\code{gecode-solver}:] solve the combinatorial problem;
+
+\item [\code{uni export}:] generate the almost-assembly program with the
+  solution to the combinatorial problem.
+
+\end{description}
+
+Chapter~\ref{sec:unison-ir} gives further detail on the Unison IR (\code{.uni})
+and the different transformations that are applied to it.
+
+\chapter{Unison IR}
+\label{sec:unison-ir}
+
+The intermediate representation (IR) used in Unison is simply referred to as
+\emph{Unison IR}.
+%
+Unison IR is a low-level,
+\href{https://en.wikipedia.org/wiki/Control_flow_graph}{control-flow
+  graph}-based IR (just like LLVM's Machine IR) that exposes the structure of
+the program and the multiple register allocation and instruction scheduling
+decisions to be formulated in the combinatorial model.
+%
+Unison IR has the following distinguishing features:
+%
+\begin{description}
+\item [linear static single assignment form (LSSA)] LSSA is a program form in
+  which temporaries (program variables at Unison IR's level) are local to
+  \href{https://en.wikipedia.org/wiki/Basic_block}{basic blocks} (\emph{blocks}
+  for short) and relations across temporaries from different blocks are made
+  explicit.
+\item [optional copies] Unison IR includes optional copy operations that can be
+  deactivated or implemented by alternative instructions.
+\item [alternative temporaries] Unison IR allows operations to use alternative
+  temporaries that hold the same value.
+\end{description}
+
+Unison IR as required for the combinatorial model formulation is constructed
+incrementally in four transformations as shown in Figure~\ref{fig:components}.
+%
+This section introduces the elements of Unison IR progressively by following the
+transformation chain for the running example.
+
+\section{Initial Unison IR}
+
+The initial Unison IR (\code{.uni}) after running the \code{uni import}
+component has a very similar structure to the input MIR function (\code{.mir}).
+%
+This is how \code{factorial.uni} looks like:
+
+\fvset{fontsize=\small}
+\begin{codeBox}
+\BVerbatimInput{code/factorial.uni}
+\end{codeBox}
+
+A Unison IR file consists of multiple sections:
+
+\begin{description}
+\item [\code{function}:] name of the function.
+\item [code:] actual code of the function (more details are given below).
+\item [\code{adjacent}:] relations among temporaries from different blocks (more
+  details are given in Section~\ref{sec:lssa}).
+\item [\code{fixed-frame}:] frame objects (such as arguments passed by the
+  \href{https://en.wikipedia.org/wiki/Call_stack}{stack}) with a fixed position.
+\item [\code{frame}:] frame objects with a variable position.
+\item [\code{stack-pointer-offset}:] offset to add to the positions of the frame
+  objects in the stack frame.
+\item [\code{jump-table}:] blocks to which
+  \href{https://en.wikipedia.org/wiki/Branch_table}{jump tables} in the code can
+  jump.
+\item [\code{goal}:] optimization goal for Unison (either \code{speed} or
+  \code{size}).
+\item [\code{source}:] source code from which the function originates (typically
+  LLVM IR).
+\end{description}
+
+The code section consists of a list of blocks.
+%
+Each block has some attributes (whether it is the entry or exit point of the
+function, whether it returns to its caller function, and its estimated or
+profiled execution frequency) and a list of operations.
+%
+An operation consists of an identifier (for example \code{o8}), a list of
+definition operands (\code{[t6]}), an instruction that implements the operation
+(\code{A2\_addi}), and a list of use operands (\code{[t5, -1]}).
+%
+Definition operands are always temporaries (\code{t6}); use operands can be
+temporaries (\code{t5}), block references (\code{b2} in \code{o3}, or Machine IR
+operands (\code{-1} in \code{o8}) that are only passed through by Unison.
+
+Some Unison IR operations are virtual, that is, they contribute to the
+definition of the function semantics but do not appear in Unison's output.
+%
+An example is the \code{in} and \code{out} delimiter operations, which define
+(use) temporaries that are
+\href{https://en.wikipedia.org/wiki/Live_variable_analysis}{live-in} (out) at
+the entry (exit) point of each block.
+%
+Another example is the \code{phi} operations in blocks \code{b1} and \code{b2}
+(the initial Unison IR is in
+\href{https://en.wikipedia.org/wiki/Static_single_assignment_form}{Static Single
+  Assignment} (SSA) form).
+%
+A \code{phi} operation (for example \code{o14}) at the beginning of a block
+defines a temporary with the value of different temporaries depending on the
+preceding block that is executed (for example \code{t9} is set to the value of
+\code{t2} if \code{b0} is the preceding block or \code{t7} if \code{b1} is the
+preceding block).
+
+In the Unison IR, a preassignment of a temporary \code{t} to a register \code{r}
+at a certain point is represented by \code{t:r}.
+%
+For example, the calling convention in Hexagon dictates that the first argument
+of a function is passed in register \code{r0}, which is modeled by the
+definition operands \code{t0:r0} in the \code{(in)} delimiter of the entry block
+\code{b0}.
+
+\section{Linearized Unison IR}\label{sec:lssa}
+
+The linearized Unison IR (\code{.lssa.uni}) after running the \code{uni
+  linearize} component is in Linear Static Single Assignment (LSSA) form.
+%
+This is how \code{factorial.lssa.uni} looks like:
+
+\fvset{fontsize=\small}
+\begin{codeBox}
+\BVerbatimInput{code/factorial.lssa.uni}
+\end{codeBox}
+
+The difference with the initial Unison IR is that each temporary \code{t} (for
+example \code{t1} in \code{factorial.uni}) is decomposed into one temporary per
+block where \code{t} is live (for example \code{t1} in \code{b0}, \code{t6} in
+\code{b1}, and \code{t11} in \code{b2}).
+%
+The congruence among LSSA temporaries that originate from the same temporary is
+kept in the \code{adjacent} section.
+%
+The fact that a temporary \code{t} in a block is congruent to another temporary
+\code{t'} in an immediate successor block is represented by \code{t -> t'} (for
+example \code{t1 -> t6} indicates that \code{t1} in \code{b0} is congruent to
+\code{t6} in the immediate successor block \code{b1}).
+
+In the linearized Unison IR, liveness information is made explicit by defining
+and using the decomposed temporaries in \code{(out)} and \code{(in)} delimiter
+operations.
+%
+In this form, \code{(phi)} operations are no longer necessary as the information
+that they convey is captured by the new elements in the IR.
+%
+For example, the relation between \code{t9}, \code{t2}, and \code{t7} in
+\code{factorial.uni} is captured by \code{t2 -> t10} and \code{t8 -> t10} in
+\code{factorial.lssa.uni} (\code{t2}, \code{t7}, and \code{t9} in
+\code{factorial.uni} correspond to \code{t2}, \code{t8}, and \code{t10} in
+\code{factorial.lssa.uni}).
+
+\section{Extended Unison IR}
+
+The transformation performed by \code{uni extend} (\code{.ext.uni}) extends the
+IR with optional copy operations that can be deactivated by the solver or used
+to support register allocation decisions such as spilling and live-range
+splitting.
+%
+This is how \code{factorial.ext.uni} looks like:
+
+\fvset{fontsize=\scriptsize}
+\begin{codeBox}
+\BVerbatimInput{code/factorial.ext.uni}
+\end{codeBox}
+
+A copy operation can be discarded or implemented by alternative instructions.
+%
+For example, \code{o15} can be deactivated if implemented by the special
+\emph{null} instruction (\code{-}), or implemented by a register-to-register
+move (\code{MVW}), a regular store (\code{STW}), or a zero-read-latency store
+(\code{STW\_nv}).
+%
+The particular strategy to extend functions with copies is processor-specific
+(see Chapter~\ref{sec:target-description}), but it is common to insert a copy
+including store instructions after each temporary definition and a copy
+including load instructions after each temporary use.
+%
+For example, \code{o15} and \code{o22} are inserted after the definition and
+before a use of \code{t25} and \code{t23} which correspond to \code{t7} in
+\code{factorial.lssa.uni}.
+
+\section{Augmented Unison IR}
+
+The augmented IR (\code{.alt.uni}) allows operations to use alternative
+temporaries that hold the same value.
+%
+This is how factorial.alt.uni looks like:
+
+\fvset{fontsize=\tiny}
+\begin{codeBox}
+\BVerbatimInput{code/factorial.alt.uni}
+\end{codeBox}
+
+The main change in the augmented Unison IR is the introduction of operand
+identifiers (for example \code{p47}) and temporaries that can be
+\emph{connected} to them (for example \code{\{-, t12, t15, ...\}}) where the
+special \emph{null} connection (\code{-}) indicates that the operand is not
+connected to any temporary because its operation is inactive.
+
+Another difference is the annotation of operations with side effects.
+%
+A side effect reads or writes an abstract object (for example, \code{control}
+for control flow or \code{pc} for Hexagon's program counter).
+%
+Multiple reads and writes to the same object cause dependencies among the
+operations (for example, \code{o2} must be issued before \code{o8} provided the
+latter is active as \code{o2} reads and \code{o8} writes the \code{control}
+object.
+
+Finally, a Hexagon specific transformation is performed where an alternative way
+of implementing compare-and-jump operations (\code{o5} and \code{o8}; \code{o21}
+and \code{o24}) is introduced (see the Hexagon Programmer's Reference Manual or
+the comments in LLVM's \code{HexagonNewValueJump.cpp} file for further detail).
+
+\chapter{Combinatorial Model}\label{sec:combinatorial-model}
+
+This chapter formulates the combinatorial model of register allocation and
+instruction scheduling that is at the core of Unison.
+%
+The combinatorial model consists of parameters (Section~\ref{sec:parameters})
+describing the input program, processor, and objective; variables
+(Section~\ref{sec:variables}) capturing the different decisions involved in
+register allocation and instruction scheduling; constraints
+(Section~\ref{sec:constraints}) relating and limiting the decisions; and an
+objective function (Section~\ref{sec:objective}) to optimize for.
+%
+This chapter provides a raw but formal description of the model, for further
+explanations please consult~\cite{Castaneda2014c}.
+
+\section{Parameters}\label{sec:parameters}
+
+This section lists the parameters of the combinatorial model with examples from
+\code{factorial.json} (see Figure~\ref{fig:components}).
+
+\booltrue{showJson}
+
+\subsection{Program}
+
+\input{program-parameters}
+
+\subsection{Processor}
+
+\input{processor-parameters}
+
+\subsection{Objective}
+
+\input{objective-parameters}
+
+\section{Variables}\label{sec:variables}
+
+\input{model-variables}
+
+\section{Constraints}\label{sec:constraints}
+
+\input{constraints}
+\input{examples}
+
+\subsection{Register Allocation}
+
+\constraintComment{connected operands}{operands cannot be connected to null temporaries}
+\connectedOperandEquation
+\connectedOperandExample
+\constraintComment{connected users}{a temporary is live iff it is connected to a user}
+\connectedUsersEquation
+where
+\usersEquation
+\connectedUsersExample
+\constraintComment{connected definers}{a temporary is live iff it is connected to its definer}
+\connectedDefinerEquation
+where
+\definerEquation
+\connectedDefinerExample
+\constraintComment{local operand connections}{local operands are connected iff their operations are active}
+\localOperandConnectionEquation
+where
+\globalEquation
+and
+\operandOperationEquation
+\localOperandConnectionExample
+\constraintComment{global operand connections}{global operands are connected iff any of their successors is connected}
+\globalOperandConnectionEquation
+\globalOperandConnectionExample
+\constraintComment{active instructions}{active operations are implemented by non-null instructions}
+\activeInstructionEquation
+\activeInstructionExample
+\constraintComment{register class}{the instruction that implements an
+  operation determines the register class to which its operands are allocated}
+\registerClassEquation
+\registerClassExample
+\constraintComment{disjoint live ranges}{temporaries whose live ranges overlap are assigned to different register atoms}
+\disjointLiveRangesEquation
+where
+\blockTemporariesEquation
+\disjointLiveRangesExample
+\constraintComment{preassignment}{certain operands are preassigned to registers}
+\preAssignmentEquation
+\preAssignmentExample
+\constraintComment{congruence}{connected adjacent operands are assigned to the same register}
+\congruenceEquation
+\congruenceExample
+\constraintComment{alignment}{aligned operands are assigned to registers at a
+  given relative distance}
+\alignmentEquation
+\constraintComment{packing}{packed operands are assigned to contiguous, complementary registers}
+\packingEquation
+\constraintComment{extensional}{the registers assigned to some pairs of operands are related extensionally}
+\extensionalEquation
+
+\subsection{Instruction Scheduling}
+
+\constraintComment{live start}{the live range of a temporary starts at the issue cycle of its definer}
+\liveStartEquation
+\constraintComment{live end}{the live range of a temporary ends with the last issue cycle of its users}
+\liveEndEquation
+\constraintComment{data precedences}{an operation that uses a temporary must be preceded by its definer}
+\dataPrecedencesEquation
+where
+\slackEquation
+\constraintComment{processor resources}{the capacity of each processor resource cannot be exceeded at any issue cycle}
+\processorResourcesEquation
+where
+\blockOperationsEquation
+\constraintComment{fixed precedences}{control and read-write dependencies yield fixed precedences among operations}
+\fixedPrecedencesEquation
+\constraintComment{activation}{an operation is active if any of its activator instructions is selected}
+\activationEquation
+\constraintComment{slack balancing}{the slack of adjacent operands is balanced}
+\slackBalancingEquation
+\constraintComment{prescheduling}{certain operations are prescheduled before the last operation issue}
+\preschedulingEquation
+\constraintComment{bypassing}{the operation of a bypassing operand is scheduled in parallel with its definer}
+\bypassingEquation
+\constraintComment{adhoc}{ad hoc processor constraints are satisfied}
+\adhocEquation
+where
+\satisfyEquation
+
+\section{Objective}\label{sec:objective}
+
+The objective is to minimize the sum of the weighted costs of each block
+according to the first objective (multi-objective optimization is not yet
+supported):
+%
+\genericObjectiveEquation
+%
+where $\blockWeight{b}$ gives the weight of block $b$:
+%
+\blockWeigthEquation
+%
+and $\blockCost{b}$ gives the estimated cost of block $b$:
+%
+\blockCostEquation
+
+To optimize for speed, $\optimizeDynamic{0}$ is set to $\code{true}$ and
+$\optimizeResource{0}$ is set to the special resource $\code{cycles}$.
+%
+To optimize for code size, $\optimizeDynamic{0}$ is set to $\code{false}$
+and $\optimizeResource{0}$ is set to the processor resource $\code{bits}$
+representing the bits with which instructions are encoded.
+
+\chapter{Target Description}
+\label{sec:target-description}
+
+This chapter explains how target processors are described in Unison.
+%
+Section~\ref{sec:target-structure} describes the structure of the source code
+that implements a target processor description.
+%
+Section~\ref{sec:generation} describes how major parts of the Unison description
+can be generated from a higher-level description.
+%
+Section~\ref{sec:importing} explains how the higher-level description itself can
+be imported from LLVM.
+
+\section{Structure}
+\label{sec:target-structure}
+
+The source code describing a new target is located under the directory
+\code{src/Unison/Target} within the base directory of the \code{Unison} Haskell
+package (\code{src/unison}).
+%
+At the highest level, a processor description is a function that returns a
+parameterized data structure of type \code{TargetDescription i r rc s}, where
+\code{i}, \code{r}, \code{rc}, and \code{s} are the processor's instruction,
+register, register class, and resource types.
+%
+They are typically defined as enumeration types, but can consist of more complex
+types if required by the target description.
+%
+A processor is registered in Unison by simply adding the target description to a
+list provided by the function \code{unisonTargets} in the module
+\code{Unison.Target}.
+
+The \code{TargetDescription} data structure consists of a collection of
+functions that Unison uses to query about the properties of the processor.
+%
+Detailed documentation about the processor functions can be obtained by building
+the code documentation for the Unison package.
+%
+To do this, just go to the \code{src} directory and run:
+%
+\begin{command}
+make doc
+\end{command}
+
+The generated HTML documentation can be found under the \code{.stack-work/dist}
+directory within the Unison package.
+%
+The \code{TargetDescription} data type can be found in the module
+\code{Unison/Target/API}.
+
+Unison includes a minimal, compilable target (\code{Minimal}) that can be used
+as a template to create new targets, see the module \code{Unison.Target.Minimal}
+in the Unison package.
+%
+A simple MIR version of our running example with Minimal instructions is
+included in \code{doc/code/factorial.mir}.
+%
+%
+To execute Unison on this function and obtain the optimal register allocation
+and instruction schedule for Minimal, run the following command from the top of
+the Git repository:
+%
+\begin{command}
+uni run doc/code/minimal.mir --goal=speed --target=Minimal
+\end{command}
+%
+By default, Minimal is defined as a single-issue processor, but an arbitrary
+issue width \code{N} can be specified using the following target option:
+%
+\begin{command}
+uni run doc/code/minimal.mir ... --targetoption=issue-width:N
+\end{command}
+
+The rest of this section explains the key abstractions used in the processor
+description and how different parts of it can be generated automatically.
+
+\section{Register Array}
+\label{sec:register-array}
+
+\section{Resource Model}
+\label{sec:resource-model}
+
+\section{Calling Conventions}
+\label{sec:calling-conventions}
+
+\section{Target Generation}
+\label{sec:generation}
+
+Large parts of a Unison processor description can be generated from a
+high-level, \href{https://en.wikipedia.org/wiki/YAML}{YAML}-based description of
+the instruction set.
+%
+The description consists of a list of instructions, where the main attributes of
+each instruction (its identifier, operands, size, \dots) are defined.
+%
+This is how the description for Hexagon's instruction \code{A2\_addi} in the
+running example looks like:
+
+\fvset{fontsize=\small}
+\begin{codeBox}
+\BVerbatimInput{code/instruction.yaml}
+\end{codeBox}
+
+The high-level YAML-based descriptions are transformed by Unison's tool
+\code{specsgen} into actual Haskell code to be compiled together with the rest
+of the Unison project.
+%
+To build \code{specsgen}, go to the \code{src} directory and run:
+%
+\begin{command}
+make build-specsgen
+\end{command}
+
+To install it, just run:
+%
+\begin{command}
+make install-specsgen
+\end{command}
+
+\code{specsgen} takes as input a number of YAML files (\code{.yaml}) and
+generates a number of Haskell files (\code{.hs}) in a given directory.
+%
+Run \code{specsgen --help} for more details.
+%
+Makefile recipes are defined to run \code{specsgen} for each target supported by
+Unison, see the \code{run-specsgen-*} recipes in \code{src/Makefile}.
+
+\section{Importing from LLVM}
+\label{sec:importing}
+
+Most of the information required to describe a target in Unison is readily
+available at LLVM for the most popular targets.
+%
+LLVM uses a language called
+\href{https://llvm.org/docs/TableGen/index.html}{TableGen} to describe targets.
+%
+The Unison driver for LLVM (see Chapter~\ref{sec:llvm-integration}) includes an
+extension of LLVM's \code{llvm-tblgen} tool that produces a YAML file
+(processable by \code{specsgen}) with the attributes of all instructions in a
+LLVM target.
+%
+To produce a \code{\$TARGET.yaml} file for a LLVM target \code{\$TARGET} (where
+LLVM's source code is placed in \code{\$LLVM\_DIR}), run:
+%
+\begin{command}
+llvm-tblgen -unison $LLVM_DIR/lib/Target/$TARGET/$TARGET.td \
+            -I $LLVM_DIR/include -I $LLVM_DIR/lib/Target/$TARGET \
+            -o $TARGET.yaml
+\end{command}
+
+\appendix
+
+\chapter{Further Reading}
+\label{sec:further-reading}
+
+\bibliographystyle{plain}
+\bibliography{manual}
+
+\end{document}

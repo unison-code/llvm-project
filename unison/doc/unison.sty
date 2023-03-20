@@ -1,0 +1,290 @@
+\ProvidesPackage{unison}
+\RequirePackage{etoolbox}
+\RequirePackage{xcolor}
+\RequirePackage{mathtools}
+
+% Commands and variables to display a model
+
+\newcommand{\modelVariable}[3]{$#1 \in #2$ & #3\\}
+\newcommand{\parameter}[2]{$#1$ & #2 \\}
+\newcommand{\tableSpace}{\\[-0.3cm]}
+\newcommand{\constraintComment}[2]{\textbf{#1}: #2.}
+\newbool{showJson}
+\newcommand{\json}[2]{
+  \ifbool{showJson}{\tt #1 & \tt #2 \\}{}
+}
+\newcommand{\jsonComment}[1]{
+  \ifbool{showJson}{& \emph{#1} \\}{}
+}
+\newcommand{\operator}[1]{\operatorname{#1}\,}
+
+% Commands and environments to represent programs
+
+\newcommand{\T}[1]{t_{#1}}
+\newcommand{\Tm}[2]{\preAssigned{\T{#1}}{#2}}
+\newcommand{\preAssigned}[2]{#1\hspace{-0.06cm}\triangleright\hspace{-0.06cm}\register{#2}}
+\newcommand{\register}[1]{\texttt{#1}}
+\newcommand{\cycle}[1]{\texttt{#1}}
+\newcommand{\nullConnection}{\inactive{\bot}}
+\newcommand{\instruction}[1]{\mathtt{#1}}
+\newcommand{\nullInstruction}{\inactive{\instruction{\boldsymbol{\bot}}}}
+\newcommand{\lowOperation}{\operation{low}}
+\newcommand{\congruence}{\equiv}
+\newcommand{\congruent}[2]{#1 \congruence #2}
+\newcommand{\phiCongruence}{\stackrel{\phi}{=}}
+\newcommand{\phiCongruent}[2]{#1 \phiCongruence #2}
+\newcommand{\adjacency}{\stackrel{=}{\rightarrow}}
+\newcommand{\adjacent}[2]{#1 \adjacency{} #2}
+\newcommand{\copyRelatedSymbol}{\stackrel{c}{=}}
+\newcommand{\copyRelated}[2]{#1 \copyRelatedSymbol #2}
+\newcommand{\processorResource}[1]{\mathtt{#1}}
+\newcommand{\summation}[2]{\sum_{\mathclap{#1}}#2}
+\newcommand{\maximum}[2]{\max_{\mathclap{#1}}#2}
+\newcommand{\B}[1]{b_{#1}}
+
+\newcommand{\inactive}[1]{{\textcolor{gray}{#1}}}
+\newcommand{\bits}{\processorResource{bits}}
+\newcommand{\energy}{\processorResource{energy}}
+
+% Some math commands
+
+\newcommand{\lexGe}{\mathop{\ge}\limits_{lex}}
+\newcommand{\lexGt}{\mathop{>}\limits_{lex}}
+\newcommand{\suchThat}{:}
+\newcommand{\union}{\cup}
+\newcommand{\intersection}{\cap}
+\newcommand{\xor}{\oplus}
+\newcommand{\set}[1]{\left \{ #1 \right \}}
+\newcommand{\setBuilder}[2]{\set{ #1 \suchThat #2 }}
+\newcommand{\cardinality}[1]{\left | #1 \right |}
+\newcommand{\interval}[2]{[ #1 , #2]}
+\newcommand{\tuple}[1]{\left \langle #1 \right \rangle }
+\newcommand{\p}[1]{\left( #1 \right) }
+\newcommand{\sequence}[1]{\left( #1 \right) }
+\newcommand{\sequenceBuilder}[2]{\sequence{ #1 \suchThat #2 }}
+\newcommand{\naturalNumbersZero}{\mathbb{N}_0}
+\newcommand{\integerNumbers}{\mathbb{Z}}
+\newcommand{\minimum}[2]{\operator{min}\left(#1, #2\right)}
+\newcommand{\domain}[1]{\operator{D}\left(#1\right)}
+\newcommand{\forallIn}[2]{\forall #1 \squeeze{\in} #2}
+\newcommand{\existsIn}[2]{\exists #1 \squeeze{\in} #2}
+\newcommand{\notExistsIn}[2]{\nexists #1 \squeeze{\in} #2}
+
+% Constraint commands
+
+\newcommand{\disjointSymbol}{\operator{disjoint2}}
+\newcommand{\disjoint}[1]{\disjointSymbol(#1)}
+\newcommand{\cumulativeSymbol}{\operator{cumulative}}
+\newcommand{\cumulative}[1]{\cumulativeSymbol(#1)}
+\newcommand{\cumulativesSymbol}{\operator{cumulatives}}
+\newcommand{\cumulatives}[1]{\cumulativesSymbol(#1)}
+\newcommand{\elementSymbol}{\operator{element}}
+\newcommand{\element}[1]{\elementSymbol(#1)}
+\newcommand{\extensionalSymbol}{\operator{extensional}}
+\newcommand{\extensional}[1]{\extensionalSymbol(#1)}
+
+% Model commands
+
+\newcommand{\allBlocks}{B}
+\newcommand{\allOperations}{O}
+\newcommand{\allOperands}{P}
+\newcommand{\allTemporaries}{T}
+\newcommand{\allResources}{R}
+\newcommand{\allAdhocConstraints}{E}
+
+\newcommand{\instructionsSymbol}{\operator{instrs}}
+\newcommand{\temporariesSymbol}{\operator{T}}
+\newcommand{\operandsSymbol}{\operator{operands}}
+\newcommand{\operationsSymbol}{\operator{O}}
+\newcommand{\capacitySymbol}{\operator{cap}}
+\newcommand{\unitsSymbol}{\operator{con}}
+\newcommand{\durationSymbol}{\operator{dur}}
+\newcommand{\offsetSymbol}{\operator{off}}
+\newcommand{\busySymbol}{\operator{busy}}
+\newcommand{\latencySymbol}{\operator{lat}}
+\newcommand{\operationLatencySymbol}{\operator{op-lat}}
+\newcommand{\preAssignedSymbol}{:}
+\newcommand{\upwardLiveStartSymbol}{\operator{uls}}
+\newcommand{\downwardLiveEndSymbol}{\operator{dle}}
+\newcommand{\liveStartSymbol}{\mathit{ls}}
+\newcommand{\liveEndSymbol}{\mathit{le}}
+\newcommand{\definerSymbol}{\operator{definer}}
+\newcommand{\slackSymbol}{\operator{slack}}
+\newcommand{\operandOperationSymbol}{\operator{operation}}
+\newcommand{\operationBlockSymbol}{\operator{block}}
+\newcommand{\usersSymbol}{\operator{users}}
+\newcommand{\registerClassSymbol}{\operator{class}}
+\newcommand{\bypassingSymbol}{\operator{bypass}}
+\newcommand{\registerSpaceSymbol}{\operator{space}}
+\newcommand{\oldRegisterSpaceSymbol}{\operator{space}}
+\newcommand{\sourceSymbol}{\operator{src}}
+\newcommand{\destinationSymbol}{\operator{dst}}
+\newcommand{\widthSymbol}{\operator{width}}
+\newcommand{\prescheduledSymbol}{\operatorname{prescheduled}}
+\newcommand{\blockOutSymbol}{\operatorname{out}}
+\newcommand{\forbiddenRegisterAtomsSymbol}{\operator{forbidden}}
+\newcommand{\dependencyGraphSymbol}{\operator{dep}}
+\newcommand{\minimumDistanceSymbol}{\operator{dist}}
+\newcommand{\blockWeightSymbol}{\operator{weight}}
+\newcommand{\blockCostSymbol}{\operator{cost}}
+\newcommand{\blockFrequencySymbol}{\operator{freq}}
+\newcommand{\frequencySymbol}{\operator{freq}}
+\newcommand{\minimizeSymbol}{\operator{minimize}}
+\newcommand{\edgesSymbol}{\operator{edges}}
+\newcommand{\lowSymbol}{\operator{low}}
+\newcommand{\highSymbol}{\operator{high}}
+\newcommand{\alignedOperandsSymbol}{\operator{aligned}}
+\newcommand{\packedOperandsSymbol}{\operator{packed}}
+\newcommand{\extensionalOperandsSymbol}{\operator{exrelated}}
+\newcommand{\extensionalTableSymbol}{\operator{table}}
+\newcommand{\alignmentDistanceSymbol}{\operator{adist}}
+\newcommand{\useSymbol}{\operator{use}}
+\newcommand{\tempsSymbol}{\operator{temps}}
+\newcommand{\atomsSymbol}{\operator{atoms}}
+\newcommand{\registerSpaceRangeSymbol}{\operator{range}}
+\newcommand{\nameSymbol}{\operator{name}}
+\newcommand{\maxCycleSymbol}{\operator{max-cycle}}
+\newcommand{\optimizeDynamicSymbol}{\operator{dynamic}}
+\newcommand{\optimizeResourceSymbol}{\operator{resource}}
+\newcommand{\maxCostSymbol}{\operator{max-cost}}
+\newcommand{\controlFlowGraphSymbol}{\operator{cfg}}
+\newcommand{\isCopySymbol}{\operator{copy}}
+\newcommand{\liveBeforeSymbol}{\operator{before}}
+\newcommand{\noTempsSymbol}{\operator{notemps}}
+\newcommand{\cnoTempsSymbol}{\operator{cnotemps}}
+\newcommand{\acrossSymbol}{\operator{across}}
+\newcommand{\dominatesSymbol}{\operator{dominates}}
+\newcommand{\operationTypeSymbol}{\operator{type}}
+\newcommand{\operandInstructionSymbol}{\operator{instr}}
+\newcommand{\operandLatencySymbol}{\operator{lat}}
+\newcommand{\definerOperandSymbol}{\operator{def}}
+\newcommand{\instructionIndexSymbol}{\operator{index}}
+\newcommand{\interchangeableSymbol}{\operator{interchangeable}}
+\newcommand{\singleTemporarySymbol}{\operator{temp}}
+\newcommand{\userOperandsSymbol}{\operator{users}}
+\newcommand{\callerSavedSymbol}{\operator{CS}}
+\newcommand{\calleeSavedSymbol}{\operator{callee-saved}}
+\newcommand{\saturationLikelihoodSymbol}{\operator{saturation-likelihood}}
+\newcommand{\infiniteRegisterSpaceSymbol}{\operator{infinite}}
+\newcommand{\minimumLiveDurationSymbol}{\operator{min-live}}
+\newcommand{\activatorsSymbol}{\operator{activators}}
+\newcommand{\globalOperandSymbol}{\operator{global}}
+\newcommand{\satisfySymbol}{\operator{satisfy}}
+
+\newcommand{\instructions}[1]{\instructionsSymbol(#1)}
+\newcommand{\temporaries}[1]{\temporariesSymbol(#1)}
+\newcommand{\operands}[1]{\operandsSymbol(#1)}
+\newcommand{\operations}[1]{\operationsSymbol(#1)}
+\newcommand{\capacity}[1]{\capacitySymbol(#1)}
+\newcommand{\units}[2]{\unitsSymbol(#1, #2)}
+\newcommand{\duration}[2]{\durationSymbol(#1, #2)}
+\newcommand{\offset}[2]{\offsetSymbol(#1, #2)}
+\newcommand{\busy}[1]{\busySymbol(#1)}
+\newcommand{\latency}[3]{\latencySymbol(#1, #2, #3)}
+\newcommand{\operationLatency}[1]{\operationLatencySymbol(#1)}
+\newcommand{\upwardLiveStart}[1]{\upwardLiveStartSymbol(#1)}
+\newcommand{\downwardLiveEnd}[1]{\downwardLiveEndSymbol(#1)}
+\newcommand{\liveStart}[1]{\liveStartSymbol_{#1}}
+\newcommand{\liveEnd}[1]{\liveEndSymbol_{#1}}
+\newcommand{\definer}[1]{\definerSymbol(#1)}
+\newcommand{\slack}[1]{\slackSymbol(#1)}
+\newcommand{\operandOperation}[1]{\operandOperationSymbol(#1)}
+\newcommand{\operationBlock}[1]{\operationBlockSymbol(#1)}
+\newcommand{\users}[1]{\usersSymbol(#1)}
+\newcommand{\registerClass}[3]{\registerClassSymbol(#1, #2, #3)}
+\newcommand{\bypassing}[3]{\bypassingSymbol(#1, #2, #3)}
+\newcommand{\registerSpace}[1]{\registerSpaceSymbol(#1)}
+\newcommand{\oldRegisterSpace}[3]{\oldRegisterSpaceSymbol(#1, #2, #3)}
+\newcommand{\source}[1]{\sourceSymbol(#1)}
+\newcommand{\destination}[1]{\destinationSymbol(#1)}
+\newcommand{\width}[1]{\widthSymbol(#1)}
+\newcommand{\prescheduled}[2]{\prescheduledSymbol(#1, \cycle{#2})}
+\newcommand{\blockOut}[1]{\blockOutSymbol(#1)}
+\newcommand{\forbiddenRegisterAtoms}[1]{\forbiddenRegisterAtomsSymbol(#1)}
+\newcommand{\dependencyGraph}[1]{\dependencyGraphSymbol(#1)}
+\newcommand{\minimumDistance}[3]{\minimumDistanceSymbol(#1, #2, #3)}
+\newcommand{\blockWeight}[1]{\blockWeightSymbol(#1)}
+\newcommand{\blockCost}[1]{\blockCostSymbol(#1)}
+\newcommand{\blockFrequency}[1]{\blockFrequencySymbol(#1)}
+\newcommand{\frequency}[1]{\frequencySymbol(#1)}
+\newcommand{\minimize}[1]{\minimizeSymbol #1}
+\newcommand{\edges}[1]{\edgesSymbol(#1)}
+\newcommand{\low}[2]{\lowSymbol(#1, #2)}
+\newcommand{\high}[2]{\highSymbol(#1, #2)}
+\newcommand{\alignedOperands}[4]{\alignedOperandsSymbol(#1, #2, #3, #4)}
+\newcommand{\packedOperands}[2]{\packedOperandsSymbol(#1, #2)}
+\newcommand{\extensionalOperands}[2]{\extensionalOperandsSymbol(#1, #2)}
+\newcommand{\extensionalTable}[2]{\extensionalTableSymbol(#1, #2)}
+\newcommand{\alignmentDistance}[4]{\alignmentDistanceSymbol(#1, #2, #3, #4)}
+\newcommand{\use}[1]{\useSymbol(#1)}
+\newcommand{\temps}[1]{\tempsSymbol(#1)}
+\newcommand{\atoms}[1]{\atomsSymbol(#1)}
+\newcommand{\registerSpaceRange}[1]{\registerSpaceRangeSymbol(#1)}
+\newcommand{\name}[1]{\nameSymbol{(#1)}}
+\newcommand{\maxCycle}[1]{\maxCycleSymbol{(#1)}}
+\newcommand{\optimizeDynamic}[1]{\optimizeDynamicSymbol{}(#1)}
+\newcommand{\optimizeResource}[1]{\optimizeResourceSymbol{}(#1)}
+\newcommand{\maxCost}[1]{\maxCostSymbol{}(#1)}
+\newcommand{\controlFlowGraph}{\controlFlowGraphSymbol}
+\newcommand{\isCopy}[1]{\isCopySymbol(#1)}
+\newcommand{\liveBefore}[2]{\liveBeforeSymbol(#1, #2)}
+\newcommand{\noTemps}[1]{\noTempsSymbol(#1)}
+\newcommand{\cnoTemps}[3]{\cnoTempsSymbol(#1, #2, #3)}
+\newcommand{\across}[3]{\acrossSymbol(#1, #2, #3)}
+\newcommand{\dominates}[4]{\dominatesSymbol(#1, #2, #3, #4)}
+\newcommand{\operationType}[1]{\operationTypeSymbol(#1)}
+\newcommand{\copyType}{\text{\emph{copy}}}
+\newcommand{\inType}{\text{\emph{in}}}
+\newcommand{\outType}{\text{\emph{out}}}
+\newcommand{\callType}{\text{\emph{call}}}
+\newcommand{\killType}{\text{\emph{kill}}}
+\newcommand{\branchType}{\text{\emph{branch}}}
+\newcommand{\lowType}{\text{\emph{low}}}
+\newcommand{\highType}{\text{\emph{high}}}
+\newcommand{\combineType}{\text{\emph{combine}}}
+\newcommand{\operandInstruction}[1]{\operandInstructionSymbol(#1)}
+\newcommand{\operandLatency}[1]{\operandLatencySymbol(#1)}
+\newcommand{\definerOperand}[1]{\definerOperandSymbol(#1)}
+\newcommand{\instructionIndex}[1]{\instructionIndexSymbol(#1)}
+\newcommand{\interchangeable}[2]{\interchangeableSymbol(#1, #2)}
+\newcommand{\singleTemporary}[1]{\singleTemporarySymbol(#1)}
+\newcommand{\userOperands}[1]{\userOperandsSymbol(#1)}
+\newcommand{\callerSavedAtoms}{\callerSavedSymbol}
+\newcommand{\calleeSavedAtoms}{\calleeSavedSymbol}
+\newcommand{\saturationLikelihood}[2]{\saturationLikelihoodSymbol(#1, #2)}
+\newcommand{\infiniteRegisterSpace}[1]{\infiniteRegisterSpaceSymbol(#1)}
+\newcommand{\minimumLiveDuration}[1]{\minimumLiveDurationSymbol(#1)}
+\newcommand{\activators}[1]{\activatorsSymbol(#1)}
+\newcommand{\globalOperand}[1]{\globalOperandSymbol(#1)}
+\newcommand{\operand}[1]{p_{\hspace{0.03cm}#1}}
+\newcommand{\temporary}[1]{t_{\hspace{0.02cm}#1}}
+\newcommand{\operation}[1]{o_{\hspace{0.03cm}#1}}
+\newcommand{\satisfy}[1]{\satisfySymbol(#1)}
+
+% Variables
+
+\newcommand{\activeOperation}[1]{a_{#1}}
+\newcommand{\operationInstruction}[1]{i_{#1}}
+\newcommand{\liveTemporary}[1]{l_{#1}}
+\newcommand{\temporaryRegister}[1]{r_{#1}}
+\newcommand{\connectedOperand}[1]{x_{#1}}
+\newcommand{\operandTemporary}[1]{y_{#1}}
+\newcommand{\operationIssueCycle}[1]{c_{#1}}
+\newcommand{\temporaryLiveStart}[1]{\mathit{ls}_{#1}}
+\newcommand{\temporaryLiveEnd}[1]{\mathit{le}_{#1}}
+\newcommand{\operandLatencySlack}[1]{s_{#1}}
+
+% Composed variables
+
+\newcommand{\operandRegister}[1]{\temporaryRegister{\operandTemporary{#1}}}
+
+% Squeezing commands
+
+\newcommand{\eat}{\hspace{-0.05cm}}
+\newcommand{\Eat}{\hspace{-0.07cm}}
+\newcommand{\squeeze}[1]{\eat #1 \eat}
+\newcommand{\Squeeze}[1]{\Eat #1 \Eat}
+
+% Other commands
+
+\newcommand{\code}[1]{\texttt{#1}}

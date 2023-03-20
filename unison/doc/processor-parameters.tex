@@ -1,0 +1,160 @@
+\begin{longtable}{ l p{12cm} }
+
+  \parameter{I, R}{sets of instructions and resources}
+  \json{I}{[0, 1, 2, 3, \dots, 16]}
+  \json{R}{[0, 1, 2, 3, \dots, 8]}
+
+  \tableSpace
+
+  \parameter{\minimumDistance{o_1}{o_2}{\instruction{i}}}{min.~issue distance of
+    ops.~$o_1$ and $o_2$ when $o_1$ is implemented by $\instruction{i}$}
+  \json{dist}{[[[1], \dots, [0, 0, 0], \dots, [1]], [\dots], [\dots]]}
+  \jsonComment{note: this parameter is encoded with the same structure as
+    \code{dep}: each dependency and its corresponding distance array are found
+    in the same positions of their respective JSON arrays (example:
+    \code{dep[0][2]~=~[0, 3]}, \code{dist[0][2] = [1]}).}
+
+  \tableSpace
+
+  \parameter{\registerClass{o}{\instruction{i}}{p}}{register class in which
+    operation $o$ implemented by $\instruction{i}$ accesses $p$}
+  \json{class}{[[0, 0]], [[0, 0], [1, 1], [1, 9]], \dots, [[0]]}
+
+  \tableSpace
+
+  \parameter{\atoms{rc}}{atoms of register class $rc$}
+  \json{atoms}{[[0, 1, 2, \dots, 76], \dots, [37, 39, 41, \dots, 75]]}
+
+  \tableSpace
+
+  \parameter{\instructions{o}}{set of instructions that can implement operation
+    $o$}
+  \json{instructions}{[[2], [0, 3, 4], [5], \dots, [16], [2]]}
+
+  \tableSpace
+
+  \parameter{\latency{o}{\instruction{i}}{p}}{latency of $p$ when its operation $o$ is implemented by $\instruction{i}$}
+  \json{lat}{[[[1, 1]], [[0, 0], [0, 1], [0, 1]], \dots, [[0]]]}
+
+  \tableSpace
+
+  \parameter{\bypassing{o}{\instruction{i}}{p}}{whether $p$ is bypassing when its operation $o$ is implemented by $\instruction{i}$}
+  \json{bypass}{[[[false, false]], [[false, false], \dots, [[false]]]}
+
+  \tableSpace
+
+  \parameter{\capacity{\code{r}}}{capacity of processor resource $r$}
+  \json{cap}{[4, 4, 2, 1, 2, 1, 1, 2, 1]}
+
+  \tableSpace
+
+  \parameter{\units{\instruction{i}}{\code{r}}}
+  {consumption of processor resource $r$ by instruction $\instruction{i}$}
+  \json{con}{[[0, 0, \dots, 0, 0], \dots, [1, 1, 0, 0, 1, 1, 0, 0, 0]]}
+
+  \tableSpace
+
+  \parameter{\duration{\instruction{i}}{\code{r}}}{duration of usage of processor
+    resource $r$ by instruction $\instruction{i}$}
+  \json{dur}{[[0, 0, \dots, 0, 0], \dots, [1, 1, 0, 0, 1, 1, 0, 0, 0]]}
+
+  \tableSpace
+
+  \parameter{\offset{\instruction{i}}{\code{r}}}{offset of usage of processor
+    resource $r$ by instruction $\instruction{i}$}
+  \json{off}{[[0, 0, \dots, 0, 0], \dots, [0, 0, 0, 0, 0, 0, 0, 0, 0]]}
+
+  % Below parameters are not in LCTES2014 paper
+
+  \parameter{\alignedOperands{p}{i}{q}{j}}{whether operands $p$ and $q$ are
+    aligned when implemented by instructions $i$ and $j$}
+  \json{aligned}{[[69, 17, 71, 17], [70, 24, 71, 24]]}
+  \jsonComment{note: the example JSON arrays are extracted from a different
+    program (Hexagon programs do not yield alignment constraints)}
+
+  \tableSpace
+
+  \parameter{\alignmentDistance{p}{i}{q}{j}}{alignment distance of operands $p$
+    and $q$ when implemented by instructions $i$ and $j$}
+  \json{adist}{[0, 1, 1]}
+  \jsonComment{note: this parameter is encoded with the same structure as
+    \code{aligned}: each aligned operand tuple and its corresponding alignment
+    distance are found in the same positions of their respective JSON arrays
+    (example: \code{aligned[1]~=~[70, 24, 71, 24]}, \code{adist[1]~=~1}.)}
+
+  \tableSpace
+
+  \parameter{\packedOperands{p}{q}}{whether operands $p$ and $q$ are
+    packed}
+  \json{packed}{[[13, 14], [34, 35], [54, 55]]}
+  \jsonComment{note: the example JSON arrays are extracted from a different
+    program (Hexagon programs do not yield packing constraints)}
+
+  \tableSpace
+
+  \parameter{\extensionalOperands{p}{q}}{whether operands $p$ and $q$ are
+    related extensionally}
+  \json{exrelated}{[[4, 5]]}
+  \jsonComment{note: the example JSON arrays are extracted from a different
+    program (Hexagon programs do not yield extensional constraints)}
+
+  \tableSpace
+
+  \parameter{\extensionalTable{p}{q}}{table of register assignments for
+    operands $p$ and $q$}
+  \json{table}{[[0, 1],[2, 3],[4, 5],[6, 7]]}
+  \jsonComment{note: the example JSON arrays are extracted from a different
+    program (Hexagon programs do not yield extensional constraints)}
+
+  \tableSpace
+
+  \parameter{\activators{o}}{set of instructions that activate operation $o$}
+  \json{activators}{[[], [10, 17, 13, 19], [10, 17, 13, 19], \dots, []]}
+  \jsonComment{note: the example JSON array is extracted from a different
+    program (Hexagon programs do not yet yield activation constraints)}
+
+  \tableSpace
+
+  \parameter{\callerSavedAtoms{}}{caller-saved atoms}
+  \json{callersaved}{[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 28, 32, 33, 34, 35]}
+
+  \tableSpace
+
+  \parameter{\allAdhocConstraints{}}{set of ad hoc processor constraints}
+  \json{E}{[[2, [1, [5, 13], [5, 14]], [5, 15]], \dots]}
+  \jsonComment{note: constraints are encoded as trees of expression tuples,
+    where the first element of each expression tuple encodes its type as
+    follows:}
+  \jsonComment{%
+    \mbox{%
+      \begin{tabular}{|l l|}
+        \hline
+        \begin{tabular}{ l l }
+          \code{0} & \code{or}\\
+          \code{1} & \code{and}\\
+          \code{2} & \code{xor}\\
+          \code{3} & \code{implies}\\
+          \code{4} & \code{not}\\
+          \code{5} & \code{active}\\
+          \code{6} & \code{connects}\\
+          \code{7} & \code{implements}\\
+        \end{tabular}
+        &
+        \begin{tabular}{ l l }
+          \code{8} & \code{distance}\\
+          \code{9} & \code{share}\\
+          \code{10} & \code{operand-overlap}\\
+          \code{11} & \code{temporary-overlap}\\
+          \code{12} & \code{caller-saved}\\
+          \code{13} & \code{allocated}\\
+          \code{14} & \code{aligned}\\
+          \\
+        \end{tabular}\\
+        \hline
+      \end{tabular}
+    }
+  }
+  \jsonComment{note: the example JSON array is extracted from a different
+    program (Hexagon programs do not yet yield ad hoc constraints)}
+
+\end{longtable}
