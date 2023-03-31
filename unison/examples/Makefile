@@ -38,7 +38,7 @@ factorial.ll : factorial.c
 	$(LLVM_BUILD_DIR)/bin/clang -target mipsel-linux-gnu -mcpu=mips32 -S -O1 -emit-llvm $<
 
 factorial.s : factorial.ll
-	/home/roberto/git/llvm-project/llvm/tools/llc-unison/llc-unison factorial.ll --verbose --llc /home/roberto/git/llvm-project/build/bin/llc --uni /home/roberto/git/llvm-project/unison/src/unison/build/uni
+	$(LLVM_ROOT_DIR)/llvm/tools/llc-unison/llc-unison factorial.ll --verbose --llc $(LLVM_BUILD_DIR)/bin/llc --uni $(LLVM_ROOT_DIR)/unison/src/unison/build/uni
 
 clean:
 	rm -rf *.ll *~
