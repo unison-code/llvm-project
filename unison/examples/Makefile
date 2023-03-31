@@ -30,9 +30,15 @@
 #  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 #  POSSIBILITY OF SUCH DAMAGE.
 #
-LLVM_BUILD_DIR = ../../build
+
+LLVM_ROOT_DIR = ../..
+LLVM_BUILD_DIR = $(LLVM_ROOT_DIR)/build
+
 factorial.ll : factorial.c
 	$(LLVM_BUILD_DIR)/bin/clang -target mipsel-linux-gnu -mcpu=mips32 -S -O1 -emit-llvm $<
+
+factorial.s : factorial.ll
+	/home/roberto/git/llvm-project/llvm/tools/llc-unison/llc-unison factorial.ll --verbose --llc /home/roberto/git/llvm-project/build/bin/llc --uni /home/roberto/git/llvm-project/unison/src/unison/build/uni
 
 clean:
 	rm -rf *.ll *~
